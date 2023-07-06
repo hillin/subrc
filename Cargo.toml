@@ -6,5 +6,6 @@ description = "A tiny crate that exposes a `Rc` like struct, which can be used t
 authors = ["lucas <hillinsilence@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/hillin/subrc"
+documentation = "https://docs.rs/subrc"
 keywords = ["pointer", "subrc", "rc", "memory"]
 categories = ["memory-management"]
