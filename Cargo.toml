@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "A tiny crate that exposes a `Rc` like struct, which can be used to create a reference counted pointer to a subregion of a `Rc`."
 authors = ["lucas <hillinsilence@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/hillin/subrc"
+keywords = ["pointer", "subrc", "rc", "memory"]
+categories = ["memory-management"]

@@ -1,13 +1,28 @@
 use std::{marker::PhantomData, ops::Deref, rc::Rc};
 
 /**
- * A reference counted pointer to a sub-region (member) of a [`Rc`].
- */
+* A reference counted pointer to a sub-region (member) of a [`Rc`].
+*
+* # Example
+```rust
+struct Foo {
+    value: i32,
+}
+
+let rc = Rc::new(Foo { value: 42 });
+let subrc = Subrc::new(rc.clone(), |foo| &foo.value);
+// subrc derefs to 42
+assert_eq!(*subrc, 42);
+// subrc points to rc.value
+assert!(std::ptr::eq(&*subrc, &rc.value));
+```
+*/
 #[derive(PartialEq, Clone)]
 pub struct Subrc<T, U> {
     rc: Rc<T>,
     offset: usize,
-    u: PhantomData<U>,
+    #[doc(hidden)]
+    _u: PhantomData<U>,
 }
 
 impl<T, U> Subrc<T, U> {
@@ -27,20 +42,31 @@ impl<T, U> Subrc<T, U> {
         offset
     }
 
-    /** 
-     * Create a [`Subrc`] pointer, which points to a subregion of the specified [`Rc`].
-     * The `getter` function is used to specify the subregion. It must return a reference to a subregion 
-     * of the [`Rc`]. Returning anything else will result in a panic.
-     */
+    /**
+       Create a [`Subrc`] pointer, which points to a subregion of the specified [`Rc`].
+       The `getter` function is used to specify the subregion. It must return a reference to a subregion
+       of the [`Rc`]. Returning anything else will result in a panic.
+
+       # Panics
+       In the `getter` function, returning anything other than a reference to a subregion of the [`Rc`]
+       will result in a panic.
+
+       ## Example
+       ```rust
+           let s = String::from("hello");
+           let rc = Rc::new(s);
+           let subrc = Subrc::new(rc.clone(), |s| &123);   // panic here: `123` is totally unrelated to `s`!
+       ```
+    */
     pub fn new<F>(rc: Rc<T>, getter: F) -> Self
     where
-        F: Fn(&T) -> &U,
+        F: FnOnce(&T) -> &U,
     {
         let offset = unsafe { Self::get_offset(&*rc, getter(&rc)) };
         Subrc {
             rc,
             offset,
-            u: PhantomData,
+            _u: PhantomData,
         }
     }
 
