@@ -11,6 +11,7 @@ struct Foo {
 
 let rc = Rc::new(Foo { value: 42 });
 let subrc = Subrc::new(rc.clone(), |foo| &foo.value);
+// (or use the macro: `subrc!(rc.value)` )
 // subrc derefs to 42
 assert_eq!(*subrc, 42);
 // subrc points to rc.value
@@ -46,6 +47,9 @@ impl<T, U> Subrc<T, U> {
        Create a [`Subrc`] pointer, which points to a subregion of the specified [`Rc`].
        The `getter` function is used to specify the subregion. It must return a reference to a subregion
        of the [`Rc`]. Returning anything else will result in a panic.
+
+       It is recommended to use the [`subrc`] macro for better readability and an extra safe guard to
+       prevent panicking (by accidentally referencing something unrelated).
 
        # Panics
        In the `getter` function, returning anything other than a reference to a subregion of the [`Rc`]
@@ -87,11 +91,33 @@ impl<T, U> Deref for Subrc<T, U> {
     }
 }
 
+/**
+ Create a [`Subrc`] pointer, which points to a subregion of the specified [`Rc`].
+ # Example
+```rust
+struct Foo {
+    value: i32,
+}
+let rc = Rc::new(Foo { value: 42 });
+let subrc = subrc!(rc.value);
+// subrc derefs to 42
+assert_eq!(*subrc, 42);
+// subrc points to rc.value
+assert!(std::ptr::eq(&*subrc, &rc.value));
+```
+ */
+#[macro_export]
+macro_rules! subrc {
+    ($rc:ident$(.$field:ident)*) => {
+        Subrc::new($rc.clone(), |t| &t$(.$field)* )
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use std::rc::Rc;
 
-    use super::Subrc;
+    use super::*;
 
     struct Foo {
         _value: i32,
@@ -110,7 +136,7 @@ mod tests {
         };
 
         let rc = Rc::new(foo);
-        let subrc = Subrc::new(rc.clone(), |foo| &foo.bar);
+        let subrc = subrc!(rc.bar);
         assert_eq!(subrc.value, 24);
         assert!(std::ptr::eq(&*subrc, &rc.bar));
     }
