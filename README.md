@@ -1,7 +1,7 @@
 # Subrc
 
-![crates.io](https://img.shields.io/crates/v/subrc.svg)
-![docs.rs](https://img.shields.io/docsrs/subrc/latest)
+[![crates.io](https://img.shields.io/crates/v/subrc.svg)](https://crates.io/crates/subrc)
+[![docs.rs](https://img.shields.io/docsrs/subrc/latest)](https://docs.rs/subrc/latest)
 
 A tiny crate that exposes a `Rc` like struct, which can be used to create a reference counted pointer to a subregion (member, or member of member etc.) of a `Rc`.
 
